@@ -643,16 +643,37 @@ function parseExcel(data) {
   renderPreviewGrid(headers, uploadedData);
 }
 
+// Function to render the preview grid with column labels, row labels, and Select All button
 function renderPreviewGrid(headers, data) {
   const previewDiv = document.getElementById('filePreview');
-  let html = '<table><thead><tr>';
-  headers.forEach(header => {
-    html += `<th>${header}</th>`;
-  });
-  html += '</tr></thead><tbody>';
+  let html = '<table><thead>';
 
+  // First row: Column labels (A, B, C, etc.)
+  html += '<tr>';
+  html += `<th><button onclick="toggleSelectAll()">Select All</button></th>`; // Select All button
+  for (let col = 0; col < headers.length; col++) {
+    const columnLabel = indexToColumnLabel(col);
+    html += `<th>${columnLabel}</th>`; // Column labels (A, B, C, etc.)
+  }
+  html += '</tr>';
+
+  // Second row: Actual headers (Name, Email, etc.)
+  html += '<tr>';
+  html += `<th></th>`; // Empty cell for the Select All column
+  headers.forEach(header => {
+    html += `<th>${header}</th>`; // Actual headers (Name, Email, etc.)
+  });
+  html += '</tr>';
+
+  html += '</thead><tbody>';
+
+  // Add row labels (1, 2, 3, ...) and data
   data.forEach((row, rowIndex) => {
-    html += '<tr>';
+    html += `<tr>`;
+    // Add row label
+    html += `<td class="row-label">${rowIndex + 1}</td>`;
+
+    // Add data cells
     headers.forEach((header, colIndex) => {
       const cellId = `${rowIndex}-${colIndex}`;
       html += `<td id="${cellId}" onclick="toggleCellSelection('${cellId}')">${row[header]}</td>`;
@@ -663,6 +684,36 @@ function renderPreviewGrid(headers, data) {
   previewDiv.innerHTML = html;
 }
 
+// Helper function to convert column index to label (0 -> A, 1 -> B, ..., 26 -> AA, etc.)
+function indexToColumnLabel(index) {
+  let label = '';
+  while (index >= 0) {
+    label = String.fromCharCode(65 + (index % 26)) + label;
+    index = Math.floor(index / 26) - 1;
+  }
+  return label;
+}
+
+// Function to toggle Select All
+function toggleSelectAll() {
+  const allCells = document.querySelectorAll('.file-preview td:not(.row-label)');
+  const isAnyUnselected = Array.from(allCells).some(cell => !cell.classList.contains('selected'));
+
+  allCells.forEach(cell => {
+    if (isAnyUnselected) {
+      cell.classList.add('selected');
+      selectedCells.add(cell.id);
+    } else {
+      cell.classList.remove('selected');
+      selectedCells.delete(cell.id);
+    }
+  });
+
+  updateSelectedCellCount();
+  updateSelectedRangeTextbox();
+}
+
+// Function to toggle cell selection
 function toggleCellSelection(cellId) {
   const cell = document.getElementById(cellId);
   if (selectedCells.has(cellId)) {
@@ -680,6 +731,7 @@ function toggleCellSelection(cellId) {
   updateSelectedCellCount();
 }
 
+// Function to update the selected range textbox
 function updateSelectedRangeTextbox() {
   if (selectedCells.size === 0) {
     document.getElementById('selectedRange').value = '';
@@ -755,6 +807,7 @@ function groupCellsIntoRanges(cellReferences) {
   return ranges;
 }
 
+// Function to highlight cells from the selected range
 function highlightCellsFromRange() {
   const rangeInput = document.getElementById('selectedRange').value.trim();
   if (!rangeInput) return;
@@ -818,6 +871,7 @@ function highlightCellsFromRange() {
   updateSelectedCellCount();
 }
 
+// Function to load selected cells
 function loadSelectedCells() {
   const rangeInput = document.getElementById('selectedRange').value.trim();
   let selectedData = [];
