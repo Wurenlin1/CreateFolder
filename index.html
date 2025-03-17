@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Folder Structure Creator</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="input-section">
+        <h2>Enter Main Folder Names</h2>
+        <textarea
+          id="mainFolderInput"
+          placeholder="Enter main folder names, one per line"
+        ></textarea>
+        <button onclick="addMainFolders()">Add Main Folders</button>
+
+        <!-- Main Folder Counts -->
+        <div class="folder-counts">
+          <p>
+            Total Main Folders in Textbox:
+            <span id="mainFoldersInTextbox">0</span>
+          </p>
+          <p>Total Main Folders: <span id="totalMainFolders">0</span></p>
+        </div>
+
+        <!-- Upload CSV/Excel Button -->
+        <button onclick="openFileUploadModal()">Upload CSV/Excel</button>
+
+        <h2>Add Subfolders</h2>
+        <textarea
+          id="subfolderInput"
+          placeholder="Enter subfolder names, one per line"
+        ></textarea>
+        <button onclick="addSubfolders()">Add Subfolders to Selected</button>
+
+        <!-- Subfolder Counts -->
+        <div class="folder-counts">
+          <p>Subfolders in Textbox: <span id="subfoldersInTextbox">0</span></p>
+          <p>
+            Total Subfolders to Create:
+            <span id="totalSubfoldersToCreate">0</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="output-section">
+        <h2>Folder Structure Preview</h2>
+        <div class="folder-preview-container">
+          <div id="folderStructure"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button onclick="selectAllFolders()">Select All</button>
+          <button onclick="deleteSelectedFolders()" class="delete-button">
+            Delete Selected
+          </button>
+          <button onclick="clearAllFolders()" class="clear-button">
+            Clear All
+          </button>
+        </div>
+
+        <!-- Sort and Expand/Collapse Dropdowns -->
+        <div class="dropdown-buttons">
+          <select id="sortOrder" onchange="sortFolders()">
+            <option value="">Sort</option>
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+          <select id="expandCollapse" onchange="toggleExpandCollapse()">
+            <option value="">Expand/Collapse</option>
+            <option value="expand">Expand All</option>
+            <option value="collapse">Collapse All</option>
+          </select>
+        </div>
+
+        <!-- Select Folders by Level -->
+        <div class="select-by-level">
+          <h2>Select Folders by Level</h2>
+          <input
+            type="number"
+            id="folderLevel"
+            placeholder="Enter folder level (e.g., 1 for main folders)"
+            min="1"
+          />
+          <button onclick="selectFoldersByLevel()">Select by Level</button>
+        </div>
+
+        <!-- Export as ZIP -->
+        <div class="export-section">
+          <h2>Export Folder Structure</h2>
+          <button onclick="exportFoldersAsZip()">Export as ZIP</button>
+        </div>
+
+        <!-- Save/Load Folder Structure -->
+        <div class="save-load-section">
+          <h2>Save/Load Folder Structure</h2>
+          <button onclick="saveFolderStructure()">Save</button>
+          <button onclick="loadFolderStructure()">Load</button>
+          <input
+            type="file"
+            id="loadFile"
+            style="display: none"
+            onchange="loadFolderStructureFromFile(event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Modal Dialog for Duplicates -->
+    <div id="duplicateModal" class="modal">
+      <div class="modal-content">
+        <h3>Duplicate Folder Names Detected</h3>
+        <div class="duplicate-list" id="duplicateList"></div>
+        <div class="modal-footer">
+          <div class="modal-buttons">
+            <button onclick="handleDuplicateSelection()">Continue</button>
+            <button onclick="closeModal()">Cancel</button>
+          </div>
+          <div class="dont-ask-again">
+            <label>
+              <input type="checkbox" id="dontAskAgain" /> Don't ask again
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Upload Modal -->
+    <div id="fileUploadModal" class="modal">
+      <div class="modal-content">
+        <h3>Upload CSV/Excel File</h3>
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFileUpload(event)" />
+        <div class="selected-range">
+          <label for="selectedRange">Selected Range:</label>
+          <input type="text" id="selectedRange" placeholder="e.g., A1:B2, A4, C1" />
+        </div>
+        <div class="selected-count">
+          <p>Selected Cells: <span id="selectedCellCount">0</span></p>
+        </div>
+        <div id="filePreview" class="file-preview">
+          <!-- Preview grid will be displayed here -->
+        </div>
+        <div class="modal-footer">
+          <button onclick="loadSelectedCells()">Load Selected Cell(s)</button>
+          <button onclick="closeFileUploadModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
