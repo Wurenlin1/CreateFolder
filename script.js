@@ -266,7 +266,11 @@ function addMainFolders() {
     alert('Please enter at least one main folder name.');
     return;
   }
-  handleDuplicates(mainFolderNames);
+
+  // Sanitize folder names
+  const sanitizedNames = mainFolderNames.map(name => sanitizeFolderName(name.trim()));
+
+  handleDuplicates(sanitizedNames);
 
   // Automatically sort folders after adding new ones
   const sortOrder = document.getElementById('sortOrder').value;
@@ -288,6 +292,9 @@ function addSubfolders() {
     return;
   }
 
+  // Sanitize subfolder names
+  const sanitizedNames = subfolderNames.map(name => sanitizeFolderName(name.trim()));
+
   // Get all selected folders
   const selectedFolders = getSelectedFolders(folders);
 
@@ -299,7 +306,7 @@ function addSubfolders() {
 
   // Add subfolders to all selected folders
   selectedFolders.forEach(folder => {
-    processSubfolderDuplicates(subfolderNames, folder);
+    processSubfolderDuplicates(sanitizedNames, folder);
   });
 
   // Automatically sort folders after adding new ones
@@ -567,7 +574,9 @@ function exportFoldersAsZip() {
   // Recursive function to add folders and subfolders to the ZIP
   function addFoldersToZip(zip, folderList, path = '') {
     folderList.forEach(folder => {
-      const folderPath = path ? `${path}/${folder.name}` : folder.name;
+      // Sanitize folder name before adding to ZIP
+      const sanitizedFolderName = sanitizeFolderName(folder.name);
+      const folderPath = path ? `${path}/${sanitizedFolderName}` : sanitizedFolderName;
       zip.folder(folderPath);
       if (folder.subfolders.length > 0) {
         addFoldersToZip(zip, folder.subfolders, folderPath);
@@ -1021,3 +1030,18 @@ document.getElementById('subfolderInput').addEventListener('input', updateFolder
 // Initial render and counts update
 renderFolderStructure();
 updateFolderCounts();
+// Function to detect and remove/replace special characters
+function sanitizeFolderName(name) {
+  // List of invalid characters (e.g., /, \, :, *, ?, ", <, >, |)
+  const invalidChars = /[\/\\:*?"<>|]/g;
+
+  // Replace invalid characters with a hyphen or remove them
+  const sanitizedName = name.replace(invalidChars, '-');
+
+  // Show a message if the name was modified
+  if (sanitizedName !== name) {
+    alert(`The folder name "${name}" contains invalid characters. They have been replaced with "-".`);
+  }
+
+  return sanitizedName;
+}
